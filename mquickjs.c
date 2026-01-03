@@ -1092,7 +1092,7 @@ static BOOL JS_IsPrimitive(JSContext *ctx, JSValue val)
 }
 
 /* Note: short functions are not considered as objects by this function */
-static BOOL JS_IsObject(JSContext *ctx, JSValue val)
+BOOL JS_IsObject(JSContext *ctx, JSValue val)
 {
     if (!JS_IsPtr(val)) {
         return FALSE;
@@ -2038,7 +2038,7 @@ static JSValue JS_MakeUniqueString(JSContext *ctx, JSValue val)
     return val;
 }
 
-static int JS_ToBool(JSContext *ctx, JSValue val)
+int JS_ToBool(JSContext *ctx, JSValue val)
 {
     if (JS_IsInt(val)) {
         return JS_VALUE_GET_INT(val) != 0;

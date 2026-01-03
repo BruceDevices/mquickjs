@@ -207,6 +207,7 @@ JS_BOOL JS_IsNumber(JSContext *ctx, JSValue val);
 JS_BOOL JS_IsString(JSContext *ctx, JSValue val);
 JS_BOOL JS_IsError(JSContext *ctx, JSValue val);
 JS_BOOL JS_IsFunction(JSContext *ctx, JSValue val);
+JS_BOOL JS_IsObject(JSContext *ctx, JSValue val);
 
 int JS_GetClassID(JSContext *ctx, JSValue val);
 void JS_SetOpaque(JSContext *ctx, JSValue val, void *opaque);
@@ -309,6 +310,7 @@ int JS_ToInt32(JSContext *ctx, int *pres, JSValue val);
 int JS_ToUint32(JSContext *ctx, uint32_t *pres, JSValue val);
 int JS_ToInt32Sat(JSContext *ctx, int *pres, JSValue val);
 int JS_ToNumber(JSContext *ctx, double *pres, JSValue val);
+int JS_ToBool(JSContext *ctx, JSValue val);
 
 JSValue JS_GetException(JSContext *ctx);
 int JS_StackCheck(JSContext *ctx, uint32_t len);
