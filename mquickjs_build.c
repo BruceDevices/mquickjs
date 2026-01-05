@@ -398,13 +398,13 @@ static void dump_cfinalizers(BuildContext *s)
 {
     struct list_head *el;
     ClassDefEntry *e;
-    
-    printf("static const JSCFinalizer js_c_finalizer_table[JS_CLASS_COUNT - JS_CLASS_USER] = {\n");
+
+    printf("static const JSCFinalizer js_c_finalizer_table[] = {\n");
     list_for_each(el, &s->class_list) {
         e = list_entry(el, ClassDefEntry, link);
         if (e->finalizer_name &&
             strcmp(e->finalizer_name, "NULL") != 0) {
-            printf("  [%s - JS_CLASS_USER] = %s,\n", e->class_id, e->finalizer_name);
+            printf("  %s,\n", e->finalizer_name);
         }
     }
     printf("};\n\n");
