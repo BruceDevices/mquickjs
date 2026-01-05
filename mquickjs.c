@@ -2083,6 +2083,37 @@ int JS_ToBool(JSContext *ctx, JSValue val)
     }
 }
 
+/* Return the buffer associated to the typed array or NULL if
+   it is not a typed array or if the buffer is detached.
+   copied from js_dump_object */
+const char *JS_GetTypedArrayBuffer(JSContext *ctx, size_t *plen, JSValue val)
+{
+    if (!JS_IsPtr(val)) {
+        return NULL;
+    }
+
+    void *ptr = JS_VALUE_TO_PTR(val);
+
+    if (((JSMemBlockHeader *)ptr)->mtag != JS_MTAG_OBJECT) {
+        return NULL;
+    }
+
+    JSObject *p = (JSObject *)ptr;
+
+    if (p->class_id >= JS_CLASS_UINT8C_ARRAY &&
+                p->class_id <= JS_CLASS_FLOAT64_ARRAY) {
+        JSObject *pbuffer;
+        JSByteArray *arr;
+
+        pbuffer = JS_VALUE_TO_PTR(p->u.typed_array.buffer);
+        arr = JS_VALUE_TO_PTR(pbuffer->u.array_buffer.byte_buffer);
+        if (plen)
+            *plen = p->u.typed_array.len;
+        return (const char *)(arr->buf);
+    }
+    return NULL;
+}
+
 /* plen can be NULL. No memory allocation is done if 'val' already is
    a string. */
 const char *JS_ToCStringLen(JSContext *ctx, size_t *plen, JSValue val,
