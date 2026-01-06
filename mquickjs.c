@@ -2689,6 +2689,47 @@ JSValue JS_GetPropertyUint32(JSContext *ctx, JSValue obj, uint32_t idx)
     return JS_GetProperty(ctx, obj, JS_NewInt32(ctx, idx));
 }
 
+const char *JS_GetOwnPropertyByIndex(JSContext *ctx,
+                                    uint32_t property_index,
+                                    uint32_t *pcount,
+                                    JSValue val)
+{
+    JSValueArray *arr;
+    JSProperty *pr;
+    int prop_count, hash_mask;
+    int i, j;
+
+    JSObject *p = JS_VALUE_TO_PTR(val);
+    int mtag = ((JSMemBlockHeader *)p)->mtag;
+    if (mtag != JS_MTAG_OBJECT && p->class_id != JS_CLASS_OBJECT)
+        return NULL;
+
+    arr = JS_VALUE_TO_PTR(p->props);
+    prop_count = JS_VALUE_GET_INT(arr->arr[0]);
+    hash_mask  = JS_VALUE_GET_INT(arr->arr[1]);
+
+    *pcount = prop_count;
+
+    if (property_index >= prop_count) {
+        return NULL;
+    }
+
+    JSCStringBuf buf;
+
+    for (i = 0, j = 0; j < prop_count; i++) {
+        pr = (JSProperty *)&arr->arr[2 + (hash_mask + 1) + 3 * i];
+        if (pr->key != JS_UNINITIALIZED) {
+            if (j == property_index && JS_IsString(ctx, pr->key)) {
+                return JS_ToCString(ctx, pr->key, &buf);
+            }
+
+            j++;
+        }
+    }
+
+    return NULL;
+}
+
 static BOOL JS_HasProperty(JSContext *ctx, JSValue obj, JSValue prop)
 {
     JSObject *p;
