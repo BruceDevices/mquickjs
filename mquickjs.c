@@ -15195,6 +15195,45 @@ JSValue js_array_buffer_alloc(JSContext *ctx, uint64_t len)
     return obj;
 }
 
+JSValue JS_NewArrayBufferCopy(JSContext *ctx, const uint8_t *buf, size_t len)
+{
+    JSValue ab;
+    JSObject *p;
+    JSByteArray *arr;
+
+    ab = js_array_buffer_alloc(ctx, (uint64_t)len);
+    if (JS_IsException(ab))
+        return ab;
+    p = JS_VALUE_TO_PTR(ab);
+    arr = JS_VALUE_TO_PTR(p->u.array_buffer.byte_buffer);
+    if (len > 0 && buf)
+        memcpy(arr->buf, buf, len);
+    return ab;
+}
+
+JSValue JS_NewUint8ArrayCopy(JSContext *ctx, const uint8_t *buf, size_t len)
+{
+    JSValue ab, obj;
+    JSGCRef ab_ref;
+    JSObject *p;
+
+    ab = JS_NewArrayBufferCopy(ctx, buf, len);
+    if (JS_IsException(ab))
+        return ab;
+
+    JS_PUSH_VALUE(ctx, ab);
+    obj = JS_NewObjectClass(ctx, JS_CLASS_UINT8_ARRAY, sizeof(JSTypedArray));
+    JS_POP_VALUE(ctx, ab);
+    if (JS_IsException(obj))
+        return obj;
+
+    p = JS_VALUE_TO_PTR(obj);
+    p->u.typed_array.buffer = ab;
+    p->u.typed_array.offset = 0;
+    p->u.typed_array.len = (uint32_t)len;
+    return obj;
+}
+
 JSValue js_array_buffer_constructor(JSContext *ctx, JSValue *this_val,
                                     int argc, JSValue *argv)
 {

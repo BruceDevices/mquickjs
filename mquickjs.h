@@ -304,6 +304,8 @@ JSValue JS_Eval(JSContext *ctx, const char *input, size_t input_len,
 void JS_GC(JSContext *ctx);
 JSValue JS_NewStringLen(JSContext *ctx, const char *buf, size_t buf_len);
 JSValue JS_NewString(JSContext *ctx, const char *buf);
+JSValue JS_NewArrayBufferCopy(JSContext *ctx, const uint8_t *buf, size_t len);
+JSValue JS_NewUint8ArrayCopy(JSContext *ctx, const uint8_t *buf, size_t len);
 const char *JS_GetTypedArrayBuffer(JSContext *ctx, size_t *plen, JSValue val);
 const char *JS_ToCStringLen(JSContext *ctx, size_t *plen, JSValue val, JSCStringBuf *buf);
 const char *JS_ToCString(JSContext *ctx, JSValue val, JSCStringBuf *buf);
