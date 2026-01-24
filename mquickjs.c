@@ -3044,13 +3044,41 @@ static JSValue JS_DefinePropertyInternal(JSContext *ctx, JSValue obj,
                 } else if (pr->prop_type == JS_PROP_VARREF) {
                     JSVarRef *pv = JS_VALUE_TO_PTR(pr->value);
                     pv->u.value = val;
+                } else if (pr->prop_type == JS_PROP_GETSET) {
+                    /* convert getter/setter property to value property */
+                    pr->prop_type = JS_PROP_NORMAL;
+                    pr->value = val;
                 } else {
                     goto error_modify;
                 }
             } else if (flags & (JS_DEF_PROP_HAS_GET | JS_DEF_PROP_HAS_SET)) {
                 if (pr->prop_type != JS_PROP_GETSET) {
-                error_modify:
-                    return JS_ThrowTypeError(ctx, "cannot modify getter/setter/value kind");
+                    if (pr->prop_type != JS_PROP_NORMAL) {
+                    error_modify:
+                        return JS_ThrowTypeError(ctx, "cannot modify getter/setter/value kind");
+                    }
+                    /* convert value property to getter/setter property */
+                    JSValueArray *arr2;
+                    JS_PUSH_VALUE(ctx, obj);
+                    JS_PUSH_VALUE(ctx, prop);
+                    JS_PUSH_VALUE(ctx, val);
+                    JS_PUSH_VALUE(ctx, setter);
+                    arr2 = js_alloc_value_array(ctx, 0, 2);
+                    JS_POP_VALUE(ctx, setter);
+                    JS_POP_VALUE(ctx, val);
+                    JS_POP_VALUE(ctx, prop);
+                    JS_POP_VALUE(ctx, obj);
+                    if (!arr2)
+                        return JS_EXCEPTION;
+                    arr2->arr[0] = JS_UNDEFINED;
+                    arr2->arr[1] = JS_UNDEFINED;
+                    if (flags & JS_DEF_PROP_HAS_GET)
+                        arr2->arr[0] = val;
+                    if (flags & JS_DEF_PROP_HAS_SET)
+                        arr2->arr[1] = setter;
+                    pr->prop_type = JS_PROP_GETSET;
+                    pr->value = JS_VALUE_FROM_PTR(arr2);
+                    goto done;
                 }
                 arr = JS_VALUE_TO_PTR(pr->value);
                 if (unlikely(JS_IS_ROM_PTR(ctx, arr))) {
